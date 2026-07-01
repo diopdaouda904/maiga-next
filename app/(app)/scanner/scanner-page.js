@@ -49,20 +49,48 @@ export default function ScannerPage() {
           { fps: 10, qrbox: { width: 240, height: 140 } },
           (code) => {
             setScannedCode(code);
-            scanner.stop().catch(() => {});
+            stopScanner();
           }
         );
       } catch (err) {
-        setCameraError("Caméra inaccessible : " + err);
+        if (!cancelled) setCameraError("Caméra inaccessible : " + err);
       }
+    }
+
+    // html5-qrcode insère lui-même des éléments (vidéo, canvas) dans le DOM,
+    // en dehors du contrôle de React. Si on quitte la page pendant que la
+    // caméra tourne encore, React essaie de nettoyer cette zone au même
+    // moment que la lib — conflit garanti ("erreur" jusqu'au rechargement).
+    // On stoppe donc TOUJOURS proprement la caméra avant de laisser React
+    // démonter le composant, en vérifiant l'état réel du scanner avant
+    // d'agir (évite d'appeler stop() sur un scanner déjà arrêté).
+    function stopScanner() {
+      const scanner = scannerRef.current;
+      if (!scanner) return Promise.resolve();
+      scannerRef.current = null;
+
+      const isScanning =
+        window.Html5Qrcode &&
+        scanner.getState &&
+        scanner.getState() === window.Html5QrcodeScannerState?.SCANNING;
+
+      const stopPromise = isScanning ? scanner.stop() : Promise.resolve();
+
+      return stopPromise
+        .catch(() => {})
+        .finally(() => {
+          try {
+            scanner.clear();
+          } catch {
+            // Rien à faire : le conteneur est déjà propre ou démonté.
+          }
+        });
     }
 
     startScanner();
     return () => {
       cancelled = true;
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-      }
+      stopScanner();
     };
   }, [mode]);
 

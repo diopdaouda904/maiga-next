@@ -9,6 +9,47 @@ function statusClass(qte, seuil) {
   return "text-ok";
 }
 
+// Champ de quantité "libre pendant la frappe" : contrairement à un input
+// contrôlé classique, effacer le champ ne l'envoie pas immédiatement comme
+// zéro — la valeur ne se valide (et ne part vers Supabase) qu'à la sortie
+// du champ (clic ailleurs ou touche Entrée). Ça permet de tout effacer et
+// retaper un nombre à deux chiffres sans être interrompu à chaque frappe.
+function QtyField({ quantite, disabled, onCommit, className }) {
+  const [value, setValue] = useState(String(quantite));
+
+  // Si la vraie quantité change depuis l'extérieur (boutons +/-, mise à
+  // jour depuis un autre appareil), on resynchronise l'affichage — mais
+  // uniquement quand l'utilisateur n'est pas en train de taper dedans.
+  useEffect(() => {
+    setValue(String(quantite));
+  }, [quantite]);
+
+  function commit() {
+    const parsed = value.trim() === "" ? 0 : parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 0) {
+      setValue(String(quantite)); // saisie invalide : on revient à la vraie valeur
+      return;
+    }
+    if (parsed !== quantite) onCommit(parsed);
+    else setValue(String(quantite));
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      value={value}
+      disabled={disabled}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+      className={className}
+    />
+  );
+}
+
 export default function StockPage() {
   const restaurant = RESTAURANTS[0];
   const [stocks, setStocks] = useState([]);
@@ -186,15 +227,12 @@ export default function StockPage() {
                 </div>
 
                 <div className="mt-2 flex gap-1.5">
-                  <input
-                    type="number"
-                    min={0}
-                    value={s.quantite}
+                  <QtyField
+                    quantite={s.quantite}
                     disabled={pendingKeys.has(s.produit)}
-                    onChange={(e) => {
-                      const v = e.target.value === "" ? 0 : parseInt(e.target.value, 10);
-                      if (!Number.isNaN(v)) handleChangeQte(s.produit, s.quantite, v);
-                    }}
+                    onCommit={(nouvelleQte) =>
+                      handleChangeQte(s.produit, s.quantite, nouvelleQte)
+                    }
                     className="flex-1 rounded-lg border border-bdr bg-surf px-2 py-2 text-center font-mono text-[1.05rem] font-semibold tabular text-txt outline-none focus:border-acc disabled:opacity-50"
                   />
                   <button

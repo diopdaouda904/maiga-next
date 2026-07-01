@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --acc: #e8962e;      /* or/ambre chaud — dégradé signature du logo */
+  --acc2: #f4b860;
+  --ink: #1c1712;      /* noir chaud du logo */
+  --bg: #fbf7f2;        /* fond crème clair */
+  --surf: #ffffff;
+  --surf2: #f3ece1;
+  --bdr: #e7ddcc;
+  --txt: #241e17;
+  --sub: #8a7f6f;
+  --mut: #b7ab98;
+  --ok: #2e9e5b;
+  --warn: #d9722c;
+  --dngr: #d6483b;
+}
+
+@theme inline {
+  --color-acc: var(--acc);
+  --color-acc2: var(--acc2);
+  --color-ink: var(--ink);
+  --color-bg: var(--bg);
+  --color-surf: var(--surf);
+  --color-surf2: var(--surf2);
+  --color-bdr: var(--bdr);
+  --color-txt: var(--txt);
+  --color-sub: var(--sub);
+  --color-mut: var(--mut);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-dngr: var(--dngr);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-plex-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+}
+
+/* Chiffres alignés proprement (quantités, historique) */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cache les flèches natives des <input type="number"> :
+   on préfère les boutons +/- custom, plus faciles à toucher au comptoir. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}

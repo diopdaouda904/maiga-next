@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const TABS = [
   { href: "/stock", label: "Stock" },
+  { href: "/inventaire", label: "Inventaire" },
   { href: "/scanner", label: "Scanner" },
   { href: "/historique", label: "Historique" },
 ];
@@ -48,14 +49,14 @@ export default function AppNav({ role }) {
         </div>
       </div>
 
-      <nav className="flex gap-0 border-b border-bdr">
+      <nav className="flex gap-0 overflow-x-auto border-b border-bdr">
         {tabs.map((tab) => {
           const active = pathname.startsWith(tab.href);
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`px-4 py-2.5 text-[0.82rem] font-medium border-b-2 -mb-px transition ${
+              className={`shrink-0 border-b-2 -mb-px px-4 py-2.5 text-[0.82rem] font-medium transition ${
                 active
                   ? "border-acc text-txt"
                   : "border-transparent text-sub hover:text-txt"
